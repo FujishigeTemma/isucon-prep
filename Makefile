@@ -7,6 +7,9 @@ DB_PORT:= ##DBポート番号##
 DB_USER:= ##DBユーザー##
 DB_PASS:= ##DBパス##
 DB_NAME:= ##DBネーム##
+export DSTAT_MYSQL_USER=$(DB_USER)
+export DSTAT_MYSQL_PWD=$(DB_PASS)
+export DSTAT_MYSQL_HOST='127.0.0.1'
 
 MYSQL_CMD:=mysql -h$(DB_HOST) -P$(DB_PORT) -u$(DB_USER) -p$(DB_PASS) $(DB_NAME)
 
@@ -99,6 +102,10 @@ else
 	@git push origin $(TAG)
 endif
 
+.PHONY: dbstat
+dbstat:
+	dstat -T --mysql5-cmds --mysql5-io --mysql5-keys
+
 .PHONY: analytics
 analytics: kataru dumpslow digestslow pprof
 
@@ -157,7 +164,7 @@ install-go:
 	@sudo ln -fs /usr/local/go/bin/go /usr/bin/go
 
 install-tools: install-kataribe install-myprofiler install-slackcat
-	@sudo apt install -y htop dstat percona-toolkit graphviz
+	@sudo apt install -y htop dstat percona-toolkit graphviz python-mysqldb
 
 # Nginxのログ解析
 install-kataribe:

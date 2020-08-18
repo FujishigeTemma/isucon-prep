@@ -42,14 +42,14 @@ update: pull build restart curl
 
 pull:
 	@git pull
-	@cd $(PROJECT_ROOT)
-	@go mod tidy
-	@go mod download
+	@cd $(PROJECT_ROOT) && \
+	go mod tidy && \
+	go mod download
 
 .PHONY: build
 build:
-	@cd $(BUILD_DIR)
-	@go build -o $(BIN_NAME)
+	@cd $(BUILD_DIR) && \
+	go build -o $(BIN_NAME)
 
 .PHONY: restart
 restart:
@@ -145,7 +145,7 @@ apt:
 
 # バックアップするディレクトリは必要に応じて変更
 backup:
-	@tar -czvpf ~/backup.tar.gz -C ~/ db webapp files
+	@tar -czvpf ~/backup.tar.gz -C ~/ .
 	@echo -e '\e[35mscp {{ユーザー名}}@{{IP address}}:~/backup.tar.gz ~/Downloads/ を手元で実行してください。\nリカバリは他のサーバーからでも可能です。\e[0m\n'
 
 install-go: 
@@ -157,7 +157,7 @@ install-go:
 	@sudo ln -fs /usr/local/go/bin/go /usr/bin/go
 
 install-tools: install-kataribe install-myprofiler install-slackcat
-	@sudo apt install -y htop dstat percona-toolkit
+	@sudo apt install -y htop dstat percona-toolkit graphviz
 
 # Nginxのログ解析
 install-kataribe:
@@ -166,7 +166,7 @@ install-kataribe:
 	@sudo unzip -o -d /usr/local/bin/ kataribe.zip
 	@sudo chmod +x /usr/local/bin/kataribe
 	@rm kataribe.zip
-	@kataribe -generate
+	@cd | kataribe -generate
 	@echo -e '\e[35mgenarated $(pwd)/kataribe.toml\nsudo nano /etc/nginx/nginx.conf 参考:https://github.com/matsuu/kataribe#Nginx\n##\n# Logging Settings\n##\n以下に追加してください。\n出力先には$(NGX_LOG)を指定してください。\nsudo nginx -t\nsudo systemctl reload nginx\e[0m\n'
 
 install-myprofiler:

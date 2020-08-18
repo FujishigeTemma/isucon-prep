@@ -9,7 +9,7 @@ DB_PASS:= ##DBパス##
 DB_NAME:= ##DBネーム##
 export DSTAT_MYSQL_USER=$(DB_USER)
 export DSTAT_MYSQL_PWD=$(DB_PASS)
-export DSTAT_MYSQL_HOST='127.0.0.1'
+export DSTAT_MYSQL_HOST=$(DB_HOST)
 
 MYSQL_CMD:=mysql -h$(DB_HOST) -P$(DB_PORT) -u$(DB_USER) -p$(DB_PASS) $(DB_NAME)
 
@@ -18,8 +18,8 @@ MYSQL_LOG:=/tmp/slow-query.log
 
 KATARIBE_CFG:=~/kataribe.toml
 
-SLACKCAT:=slackcat --tee --stream --channel ##チャンネル名##
-SLACKRAW:=slackcat --stream --channel ##チャンネル名##
+SLACKCAT:=slackcat --tee --channel ##チャンネル名##
+SLACKRAW:=slackcat --channel ##チャンネル名##
 
 PPROF:=go tool pprof -png -output pprof.png http://localhost:6060/debug/pprof/profile
 
@@ -57,6 +57,9 @@ build:
 .PHONY: restart
 restart:
 	@sudo systemctl restart $(APP_SERVICE)
+
+.PHONY: bench
+bench: stash-log log
 
 .PHONY: stash-log
 stash-log:
@@ -107,11 +110,11 @@ dbstat:
 	dstat -T --mysql5-cmds --mysql5-io --mysql5-keys
 
 .PHONY: analytics
-analytics: kataru dumpslow digestslow pprof
+analytics: kataru dumpslow digestslow
 
 .PHONY: kataru
 kataru:
-	@sudo cat $(NGX_LOG) | kataribe -f ~/kataribe.toml | $(SLACKCAT) kataribe
+	@sudo cat $(NGX_LOG) | kataribe -f $(KATARIBE_CFG) | $(SLACKCAT) kataribe
 
 .PHONY: pprof
 pprof:
@@ -129,12 +132,10 @@ digestslow:
 .PHONY: slow-on
 slow-on:
 	@sudo mysql -e "set global slow_query_log_file = '$(MYSQL_LOG)'; set global long_query_time = 0; set global slow_query_log = ON;"
-	@sudo systemctl restart mysql
 
 .PHONY: slow-off
 slow-off:
 	@sudo mysql -e "set global slow_query_log = OFF;"
-	@sudo systemctl restart mysql
 
 .PHONY: prune
 prune: stash-log slow-off pull build curl

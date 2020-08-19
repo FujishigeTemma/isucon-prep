@@ -21,7 +21,7 @@ KATARIBE_CFG:=~/kataribe.toml
 SLACKCAT:=slackcat --tee --channel ##チャンネル名##
 SLACKRAW:=slackcat --channel ##チャンネル名##
 
-PPROF:=go tool pprof -png -output pprof.png http://localhost:6060/debug/pprof/profile
+PPROF:=go tool pprof -seconds=180 -png -output pprof.png http://localhost:6060/debug/pprof/profile
 
 PROJECT_ROOT:= ##プロジェクトルートディレクトリ##
 BUILD_DIR:= ##バイナリ生成先##
@@ -39,6 +39,12 @@ COMMIT_HASH:=0
 # コマンド群
 ##
 all: build
+
+.PHONY: push
+push:
+	@git add .
+	@git commit -m "changes from server"
+	@git push
 
 .PHONY: update
 update: pull build restart curl

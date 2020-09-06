@@ -210,6 +210,7 @@ git-init:
 	@cat ~/.ssh/id_ed25519.pub
 	@echo -e '\e[35mhttps://github.com/settings/keys に追加してください。\e[0m\n'
 	@read -p $'\e[35mPress enter to continue.\e[0m\n'
+	@git init
 	@git add .
 	@git commit -m "init"
 	@git remote add origin $(REPOSITORY_URL)

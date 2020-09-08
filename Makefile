@@ -22,6 +22,7 @@ SLACKCAT:=slackcat --tee --channel ##チャンネル名##
 SLACKRAW:=slackcat --channel ##チャンネル名##
 
 PPROF:=go tool pprof -seconds=180 -png -output pprof.png http://localhost:6060/debug/pprof/profile
+FGPROF:=go tool pprof -seconds=180 -png -output fgprof.png http://localhost:6060/debug/fgprof
 
 PROJECT_ROOT:= ##プロジェクトルートディレクトリ##
 BUILD_DIR:= ##バイナリ生成先##
@@ -125,6 +126,11 @@ kataru:
 pprof:
 	@$(PPROF)
 	@$(SLACKRAW) pprof -n pprof.png ./pprof.png
+
+.PHONY: fgprof
+fgprof:
+	@$(FGPROF)
+	@$(SLACKRAW) pprof -n fgprof.png ./fgprof.png
 
 .PHONY: dumpslow
 dumpslow:

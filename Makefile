@@ -52,7 +52,6 @@ update: pull build restart curl
 pull:
 	@git pull
 	@cd $(PROJECT_ROOT) && \
-	go mod tidy && \
 	go mod download
 
 .PHONY: build

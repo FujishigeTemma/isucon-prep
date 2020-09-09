@@ -21,8 +21,8 @@ KATARIBE_CFG:=./kataribe.toml
 SLACKCAT:=slackcat --tee --channel ##チャンネル名##
 SLACKRAW:=slackcat --channel ##チャンネル名##
 
-PPROF:=go tool pprof -seconds=120 -png -output pprof.png http://localhost:6060/debug/pprof/profile
-FGPROF:=go tool pprof -seconds=120 -png -output fgprof.png http://localhost:6060/debug/fgprof
+PPROF:=go tool pprof -proto -output profile.pb.gz -seconds=120 http://localhost:6060/debug/pprof/profile
+PPROF:=go tool pprof -proto -output fgprofile.pb.gz -seconds=120 http://localhost:6060/debug/fgprof
 
 PROJECT_ROOT:= ##プロジェクトルートディレクトリ##
 BUILD_DIR:= ##バイナリ生成先##
@@ -125,12 +125,16 @@ kataru:
 .PHONY: pprof
 pprof:
 	@$(PPROF)
+	@go tool pprof -png -output pprof.png profile.pb.gz
 	@$(SLACKRAW) pprof -n pprof.png ./pprof.png
+	@go tool pprof -http=$(HOST_ADDRESS):6600 -no_browser profile.pb.gz
 
 .PHONY: fgprof
 fgprof:
-	@$(FGPROF)
+	@$(PPROF)
+	@go tool pprof -png -output fgprof.png fgprofile.pb.gz
 	@$(SLACKRAW) pprof -n fgprof.png ./fgprof.png
+	@go tool pprof -http=$(HOST_ADDRESS):6600 -no_browser fgprofile.pb.gz
 
 .PHONY: dumpslow
 dumpslow:

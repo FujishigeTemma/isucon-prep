@@ -13,16 +13,16 @@ export DSTAT_MYSQL_HOST=$(DB_HOST)
 
 MYSQL_CMD:=mysql -h$(DB_HOST) -P$(DB_PORT) -u$(DB_USER) -p$(DB_PASS) $(DB_NAME)
 
-NGX_LOG:=/tmp/access.log
-MYSQL_LOG:=/tmp/slow-query.log
+NGX_LOG:=/var/log/access.log
+MYSQL_LOG:=/var/log/slow-query.log
 
-KATARIBE_CFG:=~/kataribe.toml
+KATARIBE_CFG:=./kataribe.toml
 
 SLACKCAT:=slackcat --tee --channel ##チャンネル名##
 SLACKRAW:=slackcat --channel ##チャンネル名##
 
-PPROF:=go tool pprof -seconds=180 -png -output pprof.png http://localhost:6060/debug/pprof/profile
-FGPROF:=go tool pprof -seconds=180 -png -output fgprof.png http://localhost:6060/debug/fgprof
+PPROF:=go tool pprof -seconds=120 -png -output pprof.png http://localhost:6060/debug/pprof/profile
+FGPROF:=go tool pprof -seconds=120 -png -output fgprof.png http://localhost:6060/debug/fgprof
 
 PROJECT_ROOT:= ##プロジェクトルートディレクトリ##
 BUILD_DIR:= ##バイナリ生成先##
@@ -156,7 +156,7 @@ prune: stash-log slow-off pull build curl
 # 諸々のインストールと設定
 ##
 .PHONY: setup
-setup: apt backup install-go install-tools ssh-key git-init
+setup: apt backup install-go install-tools git-init
 
 apt:
 	@sudo apt update
@@ -202,6 +202,7 @@ install-slackcat:
 	@sudo chmod +x /usr/local/bin/slackcat
 	@slackcat --configure
 
+# 必要があれば追加
 ssh-key:
 	@mkdir -p ~/.ssh
 	@echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD1g/cXhxb6VDjqgIfEeUwjSR6qf+n30Z2Cf4fhSX1ZF1x+Glqb/NsaRhEYqiG4jaLMXGZpXddQaUHn1eXdgM06BOVtDlDN2PeN5o6COfBnNR64Aa9+wYbEgmIXNW6ZBb9zKM2+n4rJE5Ihobqu68nJwUdmZv3BLeoP6Lr6Ze0N4PvCsLEwOsw9KqJuNybrAcGM/6DJuP7bZXTrQJp1Qwwxqdmk4dOEeWIdacQrq5W5nO4n2xXkmAAQ+Q78V/rwpq4SXdcxNzo3alzcZkOuvyZPXSY8xar7Vvb8ERXa6oFaCXkRdWr9VXXWmGpFDP0iXZE3/2yn3VeZEWRwvThoIFtd ryoha@ryoha-pc" >> ~/.ssh/authorized_keys

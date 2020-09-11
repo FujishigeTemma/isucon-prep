@@ -31,10 +31,10 @@ BIN_NAME:= ##生成バイナリ名##
 CURL_OPTIONS:=-o /dev/null -s -w "%{http_code}\n"
 
 APP_SERVICE:= ##systemdサービス名##
-REPOSITORY_URL:= ##リポジトリのURL##
+REPOSITORY_URL:=git@github.com:FujishigeTemma/isucon10-qualify.git ##リポジトリのURL##
 
 TAG:= 0
-COMMIT_HASH:=0
+HASH:=0
 
 ##
 # コマンド群
@@ -92,10 +92,10 @@ status:
 rollback: reset build restart curl
 
 reset:
-ifeq ($(COMMIT_HASH),0)
-	@echo "Please set variable: COMMIT_HASH={{commit_hash}}"
+ifeq ($(HASH),0)
+	@echo "Please set variable: HASH={{commit_hash}}"
 else
-	@git reset --hard $(COMMIT_HASH)
+	@git reset --hard $(HASH)
 endif
 
 .PHONY: log
@@ -131,7 +131,7 @@ pprof:
 
 .PHONY: fgprof
 fgprof:
-	@$(PPROF)
+	@$(FGPROF)
 	@go tool pprof -png -output fgprof.png fgprofile.pb.gz
 	@$(SLACKRAW) pprof -n fgprof.png ./fgprof.png
 	@go tool pprof -http=$(HOST_ADDRESS):6600 -no_browser fgprofile.pb.gz

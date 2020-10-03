@@ -13,8 +13,8 @@ export DSTAT_MYSQL_HOST=$(DB_HOST)
 
 MYSQL_CMD:=mysql -h$(DB_HOST) -P$(DB_PORT) -u$(DB_USER) -p$(DB_PASS) $(DB_NAME)
 
-NGX_LOG:=/var/log/access.log
-MYSQL_LOG:=/var/log/slow-query.log
+NGX_LOG:=/var/log/nginx/access.log
+MYSQL_LOG:=/var/log/mysql/mysql-slow.log
 
 KATARIBE_CFG:=./kataribe.toml
 
@@ -31,9 +31,9 @@ BIN_NAME:= ##生成バイナリ名##
 CURL_OPTIONS:=-o /dev/null -s -w "%{http_code}\n"
 
 APP_SERVICE:= ##systemdサービス名##
-REPOSITORY_URL:=git@github.com:FujishigeTemma/isucon10-qualify.git ##リポジトリのURL##
+REPOSITORY_URL:=git@github.com:FujishigeTemma/isucon10-final.git ##リポジトリのURL##
 
-TAG:= 0
+TAG:=0
 HASH:=0
 
 ##
@@ -52,7 +52,7 @@ update: pull build restart curl
 
 pull:
 	@git pull
-	@cd $(PROJECT_ROOT) && \
+	@cd $(BUILD_DIR) && \
 	go mod download
 
 .PHONY: build
@@ -160,7 +160,7 @@ prune: stash-log slow-off pull build curl
 # 諸々のインストールと設定
 ##
 .PHONY: setup
-setup: apt backup install-go install-tools git-init
+setup: apt install-tools git-setup
 
 apt:
 	@sudo apt update
@@ -172,7 +172,7 @@ backup:
 	@echo -e '\e[35mscp {{ユーザー名}}@{{IP address}}:~/backup.tar.gz ~/Downloads/ を手元で実行してください。\nリカバリは他のサーバーからでも可能です。\e[0m\n'
 
 install-go: 
-	@wget https://golang.org/dl/go1.14.6.linux-amd64.tar.gz -O golang.tar.gz
+	@wget https://golang.org/dl/go1.15.2.linux-amd64.tar.gz -O golang.tar.gz
 	@tar -xzf golang.tar.gz
 	@rm -rf golang.tar.gz
 	@sudo mv go /usr/local/
@@ -213,13 +213,15 @@ ssh-key:
 	@echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGVy1KogqLG7pPTcsm5zhC5RjddrAOfX7rHGK4K8y4s7 green@DESKTOP-V1DT07E" >> ~/.ssh/authorized_keys
 	@echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIKGvCNw4WJiTg327zw9AYchInFHxzlwBgzkm12fRIGAT tenma.x0@gmail.com" >> ~/.ssh/authorized_keys
 
-git-init:
+git-setup:
 	@git config --global user.email "tenma.x0@gmail.com"
 	@git config --global user.name "FujishigeTemma"
 	@ssh-keygen -t ed25519 -q
 	@cat ~/.ssh/id_ed25519.pub
 	@echo -e '\e[35mhttps://github.com/settings/keys に追加してください。\e[0m\n'
-	@read -p $'\e[35mPress enter to continue.\e[0m\n'
+
+.PHONY: git-init
+git-init:
 	@git init
 	@git add .
 	@git commit -m "init"
